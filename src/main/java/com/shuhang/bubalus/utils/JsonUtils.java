@@ -5,6 +5,10 @@ package com.shuhang.bubalus.utils;
 
 import java.io.StringWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -23,8 +28,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 public class JsonUtils {
 
 	private final static Logger logger = LoggerFactory.getLogger(JsonUtils.class);
-	private static ObjectMapper objectMapper = new ObjectMapper();
-    private static JsonFactory jsonFactory = new JsonFactory();
     
 	/**
 	 * 对象转JSON格式
@@ -34,8 +37,10 @@ public class JsonUtils {
 	 * @return
 	 * @author mingfei.z 2018年10月24日 下午10:39:35
 	 */
-	public static String objectToString(Object obj, boolean prettyPrint) {
+	public static String objectToJson(Object obj, boolean prettyPrint) {
 		String json = "";
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonFactory jsonFactory = new JsonFactory();
 		
 		if (null == obj)
 			return json;
@@ -76,8 +81,10 @@ public class JsonUtils {
 	 * @return 
 	 * @author mingfei.z 2018年10月24日 下午10:55:01
 	 */
-    public static String objectToString(Object obj, boolean prettyPrint, JsonInclude.Include incl) {
+    public static String objectToJson(Object obj, boolean prettyPrint, JsonInclude.Include incl) {
         String result = "";
+		ObjectMapper objectMapper = new ObjectMapper();
+		JsonFactory jsonFactory = new JsonFactory();
         if (null == obj)
         	return result;
         
@@ -97,21 +104,95 @@ public class JsonUtils {
         return result;
     }
 
-	public static <T> T stringToObject(String content, Class<T> clazz) {
+    /**
+     * JSON反序列化成对象
+     * @param json
+     * @param clazz
+     * @return
+     * @author mingfei.z
+     */
+	public static <T> T jsonToObject(String json, Class<T> clazz) {
 		
-		logger.info("JSON[{}]反序列化", content);
+		logger.info("JSON[{}]反序列化", json);
 		T obj = null;
+		ObjectMapper objectMapper = new ObjectMapper();
 		
-		if (StringUtils.isEmpty(content))
+		if (StringUtils.isEmpty(json))
 			return obj;
 		
 		try {
-			obj = objectMapper.readValue(content, clazz);
+			obj = objectMapper.readValue(json, clazz);
 		} catch (Exception e) {
-			logger.error("JSON[{}]反序列化失败，异常", content, e);
+			logger.error("JSON[{}]反序列化失败，异常", json, e);
 		}
 		
 		return obj;
+	}
+	
+	/**
+	 * JSON 反序列化成List
+	 * @param json
+	 * @param clazz 集合元素类型
+	 * @return
+	 * @author mingfei.z
+	 */
+	public static <T> List<T> jsonToList(String json, Class<T> clazz) {
+
+		logger.info("JSON[{}]反序列化", json);
+		List<T> list = new ArrayList<>();
+		ObjectMapper objectMapper = new ObjectMapper();
+		
+		if (StringUtils.isEmpty(json))
+			return list;
+		
+		try {
+			JavaType javaType = getCollectionType(ArrayList.class, clazz);
+			
+			list =  objectMapper.readValue(json, javaType);
+		} catch (Exception e) {
+			logger.error("JSON[{}]反序列化失败，异常", json, e);
+		}
+		
+		return list;
+	}
+	
+	/**
+	 * JSON反序列化成Map
+	 * @param json
+	 * @param clazz
+	 * @return
+	 * @author mingfei.z
+	 */
+	public static <K, V> Map<K, V> jsonToMap(String json, Class<K> kClazz, Class<V> vClazz) {
+
+		logger.info("JSON[{}]反序列化", json);
+		Map<K, V> map = new HashMap<>();
+		ObjectMapper objectMapper = new ObjectMapper();
+		
+		if (StringUtils.isEmpty(json))
+			return map;
+		
+		try {
+			JavaType javaType = getCollectionType(HashMap.class, kClazz, vClazz);
+			
+			map =  objectMapper.readValue(json, javaType);
+		} catch (Exception e) {
+			logger.error("JSON[{}]反序列化失败，异常", json, e);
+		}
+		
+		return map;
+	}
+	
+	/**
+	 * 获取泛型的Collection Type
+	 * @param collectionClass 泛型的Collection
+	 * @param elementClass 元素类
+	 * @return JavaType Java类型
+	 */
+	public static JavaType getCollectionType(Class<?> collectionClass, Class<?> ... elementClass) {
+
+		ObjectMapper objectMapper = new ObjectMapper();
+		return objectMapper.getTypeFactory().constructParametricType(collectionClass, elementClass);
 	}
 	
 }
