@@ -97,6 +97,12 @@ public class JsonUtilsTest {
 		String mapJson = JsonUtils.objectToJson(map, false, Include.NON_NULL);
 
 		System.err.println(mapJson);
+
+		System.out.println("===================================");
+		
+		String jsonStr = "{\"title\":\"3\",\"a\":\"B\"}";
+		Book jsonBook = JsonUtils.jsonToObject(jsonStr, Book.class);
+		System.err.println(jsonBook.toString());
 		
 	}
 	
