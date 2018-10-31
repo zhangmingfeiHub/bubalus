@@ -57,6 +57,8 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
 			logger.info("Master datasource have been chose by default");
 		}
 		
+		
+		// TODO 
 		/*if (returnDataSource instanceof org.apache.tomcat.jdbc.pool.DataSource) {
 			org.apache.tomcat.jdbc.pool.DataSource source = (org.apache.tomcat.jdbc.pool.DataSource) returnDataSource;
 			String jdbcUrl = source.getUrl();
